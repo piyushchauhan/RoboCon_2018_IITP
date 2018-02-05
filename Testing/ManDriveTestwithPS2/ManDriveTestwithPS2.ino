@@ -1,54 +1,54 @@
-//#include <Shield_PS2.h>/
-//#include "Omni.h"/
-PS2 ps2 = PS2();                  //PS2 class object: ps2
+#include <Omni.h>
+#include <Drive.h>
+//#include <Shield_PS2.h>
+//#include "Omni.h"
+#include <SoftwareSerial.h>
+#include <Cytron_PS2Shield.h>
+
+Cytron_PS2Shield ps2(10, 11); // SoftwareSerial: Rx and Tx pin
+
+//PS2 ps2 = PS2();                  //PS2 class object: ps2
 //Omni omni(40,5);//TODO/
+/*
 int Left_button, Down_button, Right_button, Up_button, Start_button, Right_Joystick_button, Left_Joystick_button, Select_button;
 int Square_button, Cross_button, Circle_button, Triangle_button, R1_button, L1_button, R2_button, L2_button;
 int Right_Joystick_x, Right_Joystick_y, Left_Joystick_x, Left_Joystick_y;
 
-#include <Omni.h>
-#include <Drive.h>
-Drive manBotDrive = Drive();
-int pwms[] = {2, 5, 8};
-int dirs[] = {3, 6, 9};
-int brks[] = {4, 7, 11};
+*/
+int x,y;
 
-//int M1A= 5,M1B = 4,M2A = 7,M2B = 6,M3A = 9,M3B = 8;/
+Drive manBotDrive = Drive();
+int pwms[] = {3, 2, 5};
+int dirs[] = {29, 25, 33};
+int brks[] = {27, 23, 31};
+
 void setup()
 {
-  Serial.begin(57600);
-  ps2.init(57600, 10, 11);   //initialize the main board to use desired (baudrate, rx, tx)
-  // pinMode(direction_M1, OUTPUT); //direction pin m1
-  // pinMode(PWM_M1, OUTPUT); //pwm pin m1
-  // pinMode(direction_M2, OUTPUT); //direction pin m2
-  // pinMode(PWM_M2, OUTPUT); //pwn pin m2
-  ps2.reset(1);             //call to reset Shield-PS2
-  ps2.reset(0);
+  Serial.begin(9600);
+  // ps2.init(57600, 10, 11);   //initialize the main board to use desired (baudrate, rx, tx)
+  // ps2.reset(1);             //call to reset Shield-PS2
+  // ps2.reset(0);
+  ps2.begin(9600);
   Serial.println("PS2 Remote_Cytron Shield");
   Serial.println("Press Start");
-  // pinMode(M1A, OUTPUT);
-  // pinMode(M1B, OUTPUT);
-  // pinMode(M2A, OUTPUT);
-  // pinMode(M2B, OUTPUT);
-  // pinMode(M3A, OUTPUT);
-  // pinMode(M3B, OUTPUT);
 
-  while ((ps2.getval(p_start)));
+//  while ((ps2.getval(p_start)));
 
   Serial.println("Good");
   manBotDrive.init(pwms, dirs, brks);
-  delay(1000);
+  delay(500);
   Serial.println("Initialize success");
-  delay(2000);
+  delay(1000);
 
 
 }
 
 void loop()
 {
-  if (ps2.getall() == true)   //get all buttons and joystick status
-  { getdata();
-    printjoystickdata();
+  /*if (ps2.getall() == true)   //get all buttons and joystick status
+  { 
+    //getdata();
+    //printjoystickdata();
     //     if(Up_button==0)
     //        forward(Right_Joystick_x);
     //     else if(Down_button==0)
@@ -58,24 +58,29 @@ void loop()
     //     else if(Left_button==0)
     //        left(Right_Joystick_x);
 
-    //  mo/ve(Right_Joystick_x, Left_Joystick_y);
-    if (Left_Joystick_x > 100 && (Left_Joystick_y < 100 && Left_Joystick_y > -100)) {
+    //  move(Right_Joystick_x, Left_Joystick_y);
+    */
+    x = PS2_JOYSTICK_LEFT_X_AXIS;
+    y = PS2_JOYSTICK_LEFT_Y_AXIS;
+    if (x > 200 && (y < 200 && y > 55)) {
       manBotDrive.moveright();
     }
-    else if (Left_Joystick_x < -100 && (Left_Joystick_y < 100 && Left_Joystick_y > -100)) {
+    else if (x < 55 && (y < 200 && y > 55)) {
       manBotDrive.moveleft();
     }
-    else if (Left_Joystick_y < -100 && (Left_Joystick_x < 100 && Left_Joystick_x > -100)){
+    else if (y < 55 && (x < 200 && x > 55)){
       manBotDrive.movebackward();
     }
-    else if (Left_Joystick_y > 100 && (Left_Joystick_x < 100 && Left_Joystick_x > -100)){
+    else if (y > 200 && (x < 200 && x > 55)){
       manBotDrive.moveforward();
     }
+    /*
   }
   else    //not valid packet received
   {
     Serial.println("no valid packet received");
   }
+  */
   delay(50);
 }
 
@@ -84,7 +89,7 @@ void loop()
 
 
 
-
+/*
 
 //Simple function to print 3 digit decimal
 int p_dec(char val)
@@ -190,7 +195,7 @@ void printjoystickdata() {
 }
 
 
-
+/*
 void move(int x, int y) {
   x -= 128, y -= 128;
 
@@ -253,4 +258,5 @@ void motor(int a, int b) {
 
 
 }
+*/
 
