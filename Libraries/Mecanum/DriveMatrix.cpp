@@ -12,6 +12,10 @@ void DriveMatrix::setMotion(float vx, float vy, float w){
   w4 = (vx-vy+lm*w)/Rw;
 };
 
+float DriveMatrix::getMaxW(){
+	return max(max(w1,w2), max(w3,w4));
+}
+
 float DriveMatrix::getw1(){
   return w1;
 };

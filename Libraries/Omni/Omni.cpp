@@ -19,7 +19,7 @@ void Omni::stopped()
 {
 	digitalWrite(PWM, LOW);
 	digitalWrite(DIR, HIGH);
-	digitalWrite(BRK, LOW);
+	digitalWrite(BRK, HIGH);
 }
 void Omni::backward()
 {

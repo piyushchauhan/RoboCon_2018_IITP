@@ -121,7 +121,7 @@ boolean Cytron_PS2Shield::readAllButton()
 	
 	if(hardwareSerial)
 	{		
-		nbyte = Serial.readBytes(ps_data, 6);
+		nbyte = Serial.readBytes((unsigned char)ps_data, 6);
 		x
 		if(nbyte == 6) return(true); 
 		else return (false);

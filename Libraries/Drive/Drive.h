@@ -21,6 +21,7 @@ public:
   void movebackward();
   void moveright();
   void moveleft();
+  void stopall();
 
 };
 

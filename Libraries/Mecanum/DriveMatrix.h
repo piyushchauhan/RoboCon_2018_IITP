@@ -9,13 +9,14 @@
 class DriveMatrix
 {
 public:
-  //DriveMatrix();
+  //DriveMatrix();x
   DriveMatrix(float a, float b, float c);
   void setMotion(float vx, float vy, float w);
   float getw1();
   float getw2();
   float getw3();
   float getw4();
+  float getMaxW();
 private:
   float w1, w2, w3, w4, l, L,Rw,lm;
 };

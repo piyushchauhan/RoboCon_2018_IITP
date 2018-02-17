@@ -3,3 +3,4 @@ movebackward	KEYWORD2
 moveright		KEYWORD3
 moveleft		KEYWORD4
 init			KEYWORD5
+stop			KEYWORD6

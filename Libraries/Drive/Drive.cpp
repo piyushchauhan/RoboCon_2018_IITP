@@ -36,3 +36,10 @@ void Drive::moveright()
 	this->motor2.forward();
 	this->motor3.backward();
 }
+void Drive::stopall()
+{
+	this->motor1.stopped();
+	this->motor2.stopped();
+	this->motor3.stopped();
+
+}
