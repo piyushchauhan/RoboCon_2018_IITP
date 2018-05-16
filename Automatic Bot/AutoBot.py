@@ -11,8 +11,7 @@ import time
 import cv2
 
 
-serial_manager.connect('/dev/ttyACM0')    	 # serial connection to Arduino
-# Line Following and register locations from arduino
+serial_manager.connect('/dev/ttyACM0')	# serial connection to Arduino
 
 
 ## Image Processing

@@ -1,12 +1,5 @@
 # python ball_tracking.py --video ball.mp4
-import serial
-import numpy as np
-from nanpy import Arduino
-from nanpy import serial_manager
 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
-import time
 
 from collections import deque
 import numpy as np
@@ -23,7 +16,6 @@ ap.add_argument("-b", "--buffer", type=int, default=64,
 args = vars(ap.parse_args())
 '''
 
-
 # yellow
 # pixel:  [ 20 155 112]
 # upper:  [ 30 165 152]
@@ -33,11 +25,17 @@ args = vars(ap.parse_args())
 # pixel:  [170  29 131]
 # upper:  [180  39 171]
 # lower:  [160  19  91]
+import serial
+import numpy as np
+from nanpy import Arduino
+from nanpy import serial_manager
+
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
+import cv2
 
 
-y_Lower = (10, 80,80 )
-y_Upper = (50, 255, 255)
-pts = deque(maxlen=args["buffer"])
 serial_manager.connect('/dev/ttyACM0')	# serial connection to Arduino
 
 
@@ -51,33 +49,27 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 # allow the camera to warmup
 time.sleep(0.1)
 
-''' #Feed from laptop
+arduinoSerialData = serial.Serial('/dev/ttyACM0',9600)
+
+Lower = (10, 80,80 )
+Upper = (50, 255, 255)
+'''
+pts = deque(maxlen=args["buffer"])
+
 if not args.get("video", False):
-	camera = cv2.VideoCapture(0)
+	camera = cv2.VideoCapture(1)
 else:
 	camera = cv2.VideoCapture(args["video"])
 '''
 
-# yellow
-# pixel:  [ 20 155 112]
-# upper:  [ 30 165 152]
-# lower:  [ 10 145  72]
-
-# white
-# pixel:  [170  29 131]
-# upper:  [180  39 171]
-# lower:  [160  19  91]
-
-
-ring_Lower = (10, 80,80 )
-ring_Upper = (50, 255, 255)
 
 # while True:
-for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):	
-	# LAPTOP DEBUG
+# capture frames from the camera
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	
+	# (grabbed, frame) = camera.read()
 	# if args.get("video") and not grabbed:
 	# 	break
-	# (grabbed, frame) = camera.read()
 
 	image = frame.array
 
@@ -85,19 +77,19 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 	# cv2.imshow("hsv",hsv)
 
-	mask = cv2.inRange(hsv, ring_Lower, ring_Upper)
+	mask = cv2.inRange(hsv, Lower, Upper)
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
 	# cv2.imshow("mask",mask)
 
 	cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
 		cv2.CHAIN_APPROX_SIMPLE)[-2]
-	center = None
+	
 
 	if len(cnts) > 0:
 		c = max(cnts, key=cv2.contourArea)
-		d = cv2.contourArea(c)
-		print(d)
+		d=cv2.contourArea(c)
+		# print(d)
 		for e in cnts:
 			cv2.drawContours(frame, [e], -1, (0, 255, 0), 2)
 		((x, y), radius) = cv2.minEnclosingCircle(c)
@@ -117,6 +109,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
 		cv2.line(frame, pts[i - 1], pts[i], (0,255 , 0), thickness)
+	# leng=len(pts)
+	# leng=pts[leng-1]
+	print(center)
+		
 
 	# cv2.imshow("Frame", frame)
 	
@@ -137,36 +133,66 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 	res = cv2.dilate(res, None, iterations=2)
 	res=cv2.cvtColor(res,cv2.COLOR_BGR2GRAY)
 	# print(res.shape)
-	circles = cv2.HoughCircles(res, cv2.HOUGH_GRADIENT, 1.7, 50)#,param1=None,param2=None,minRadius=0,maxRadius=0)
+	if len(l_x)<5:
+		circles = cv2.HoughCircles(res, cv2.HOUGH_GRADIENT, 2.3, 50)#,param1=None,param2=None,minRadius=0,maxRadius=0)
 
 	# ensure at least some circles were found
-	if circles is not None:
-	# convert the (x, y) coordinates and radius of the circles to integers
-		circles = np.round(circles[0, :]).astype("int")
-		p=len(circles)	
-		sx,sy,sz=0,0,0
-		# loop over the (x, y) coordinates and radius of the circles
-		for (x, y, r) in circles:
-			sx+=x
-			sy+=y
-			sz+=r
-		x=(int)(sx/p)
-		y=(int)(sy/p)
-		r=(int)(sz/p)
-		# draw the circle in the output image, then draw a rectangle
-		# corresponding to the center of the circle
-		cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
-		cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-	# res = cv2.Canny(res,100,200)
+		if circles is not None:
+		# convert the (x, y) coordinates and radius of the circles to integers
+			circles = np.round(circles[0, :]).astype("int")
+			p=len(circles)	
+			sx,sy,sz=0,0,0
+			# loop over the (x, y) coordinates and radius of the circles
+			for (x, y, r) in circles:
+				sx+=x
+				sy+=y
+				sz+=r
+			x=(int)(sx/p)
+			y=(int)(sy/p)
+			r=(int)(sz/p)
+			# draw the circle in the output image, then draw a rectangle
+			# corresponding to the center of the circle
+			if (len(l_x)<5):
+				l_x.append(x)
+				l_y.append(y)
+				l_r.append(r)
+			
+			
+			cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
+			cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+
+		# res = cv2.Canny(res,100,200)
+	else:
+		avg_x = (int)(sum(l_x) / 5)
+		avg_y = (int)(sum(l_y) / 5)
+		avg_r = (int)(min(l_r) )
+		cv2.circle(frame, (avg_x, avg_y), avg_r, (0, 255, 0), 4)
+		cv2.rectangle(frame, (avg_x - 5, avg_y - 5), (avg_x + 5, avg_y + 5), (0, 128, 255), -1)
+		d_x=abs(center[0]-avg_x)
+		d_y=abs(center[1]-avg_y)
+		dist=int((d_x**2 + d_y**2)**(0.5))
+		if dist<(avg_r-20):
+			# ball goes in the ring
+			cv2.circle(frame, (100, 100), 30, (0, 255, 0), -1)
+			arduinoSerialData.write('1')
+		else:
+			cv2.circle(frame, (100, 100), 30, (0, 0, 255), -1)	
+			arduinoSerialData.write('0')
+
+
+
+
+
 	# cv2.imshow("img1",res)	
 
 	# cv2.imshow('frame',frame)
 	# cv2.imshow('mask',mask)
 	
+	rawCapture.truncate(0)
+
+
 	# cv2.imshow('res',res)
 	key = cv2.waitKey(1) & 0xFF
-
-	rawCapture.truncate(0)
 
 	if key == ord("q"):
 		break
